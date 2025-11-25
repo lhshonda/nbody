@@ -3,15 +3,15 @@ package com.lhshonda.nbody;
 // POJO
 public class StellarObject {
 
-    /*
-    The physics properties are private in order to prevent other parts of the code from
-    accidentally interacting with it. This is an OOP concept named encapsulation.
-     */
+    /* The physics properties are private in order to prevent other parts of the code from
+    accidentally interacting with it. This is an OOP concept named encapsulation. */
 
     // physical properties
     private double x, y;
     private double vx, vy;
     private double mass;
+    private double ax;
+    private double ay;
 
     // current forces acting on the body (tb calculated every frame)
     private double forceX, forceY;
@@ -33,6 +33,8 @@ public class StellarObject {
         this.y = y;
         this.vx = vx;
         this.vy = vy;
+        this.ax = ax;
+        this.ay = ay;
         this.mass = mass;
         this.radius = radius;
 
@@ -57,6 +59,8 @@ public class StellarObject {
     public double getY() {return y;}
     public double getVx() {return vx;}
     public double getVy() {return vy;}
+    public double getAx() {return ax;}
+    public double getAy() {return ay;}
     public double getMass() {return mass;}
     public double getRadius() {return radius;}
     public double getForceX() {return forceX;}
@@ -67,4 +71,6 @@ public class StellarObject {
     public void setY(double y) {this.y = y;}
     public void setVx(double vx) {this.vx = vx;}
     public void setVy(double vy) {this.vy = vy;}
+    public void setAx(double ax) {this.ax = ax;}
+    public void setAy(double ay) {this.ay = ay;}
 }

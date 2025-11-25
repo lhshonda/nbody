@@ -38,26 +38,39 @@ public class NBodySimulator extends Application {
         simulation = new PhysicsEngine();
 
         // create the sun
-        StellarObject sun = new StellarObject(
+        simulation.addBody (new StellarObject(
                 WINDOW_WIDTH / 2.0,
                 WINDOW_HEIGHT / 2.0,
                 0,
                 0,
                 SUN_MASS,
                 20
-        );
-        simulation.addBody(sun);
+        ));
+
+        double r_pixels = 256.0;
+        double v_orbit = 113.5;
 
         // create the earth
-        StellarObject earth = new StellarObject(
-                WINDOW_WIDTH / 4.0,
+        simulation.addBody(new StellarObject(
+                (WINDOW_WIDTH / 2.0) - r_pixels,
                 WINDOW_HEIGHT / 2.0,
                 0,
-                -40,
-                EARTH_MASS,
+                -v_orbit,
+                1,
                 5
-        );
-        simulation.addBody(earth);
+        ));
+
+        double r2_pixels = 150.0;
+        double v2_orbit = Math.sqrt((10 * SUN_MASS) / r2_pixels);
+
+        simulation.addBody(new StellarObject(
+                (WINDOW_WIDTH / 2.0) + r2_pixels,
+                WINDOW_HEIGHT / 2.0,
+                0,
+                v2_orbit,
+                5,
+                7
+        ));
 
         AnimationTimer timer = new AnimationTimer() {
             // creating a variable inside the timer in nanoseconds
