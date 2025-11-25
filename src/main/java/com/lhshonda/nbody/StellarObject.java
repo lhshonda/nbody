@@ -28,7 +28,7 @@ public class StellarObject {
     constructor is called.
      */
 
-    public StellarObject(double x, double y, double mass, double radius) {
+    public StellarObject(double x, double y, double vx, double vy, double mass, double radius) {
         this.x = x;
         this.y = y;
         this.vx = vx;

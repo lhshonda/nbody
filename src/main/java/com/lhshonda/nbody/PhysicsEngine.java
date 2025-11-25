@@ -11,7 +11,7 @@ public class PhysicsEngine {
     /* A list is a data structure that holds an ordered collection of elements. Unlike a basic array
     it can grow and shrink as you add/remove things. */
 
-    private final double G = 1000; // gravitational constant
+    private final double G = 5; // gravitational constant
     /* In the real world 'G' is very small (6.674e-11).
     In order to make it noticeable it's scaled by a lot. */
 
