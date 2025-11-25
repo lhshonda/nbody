@@ -3,6 +3,11 @@ package com.lhshonda.nbody;
 // POJO
 public class StellarObject {
 
+    /*
+    The physics properties are private in order to prevent other parts of the code from
+    accidentally interacting with it. This is an OOP concept named encapsulation.
+     */
+
     // physical properties
     private double x, y;
     private double vx, vy;
@@ -13,6 +18,15 @@ public class StellarObject {
 
     // drawing properties
     private double radius;
+
+    /*
+    This constructor is called when the 'new' keyword is used. It initializes all
+    the fields, getting them into a ready-to-use state. It 'constructs' the object.
+
+    It must have no return type, and it must be the same name as the class.
+    The keyword 'this' will ensure a reference to the specific object instance being created when the
+    constructor is called.
+     */
 
     public StellarObject(double x, double y, double mass, double radius) {
         this.x = x;
