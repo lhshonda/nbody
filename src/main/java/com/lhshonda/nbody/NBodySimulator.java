@@ -10,6 +10,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.animation.AnimationTimer;
+import javafx.scene.input.MouseButton;
 
 public class NBodySimulator extends Application {
 
@@ -29,6 +30,7 @@ public class NBodySimulator extends Application {
     private boolean isPaused = false;   // :: PLAY STATE
     private ControlPanel uiPanel;       // :: UI PANEL CONTROLS
     private Camera camera;
+    private InputHandler inputHandler;
 
     // >> MAIN ENTRY POINT
     @Override
@@ -66,6 +68,10 @@ public class NBodySimulator extends Application {
         // :: Created after the scene in order to know the starting size.
         this.camera = new Camera(scene.getWidth(), scene.getHeight(), AU);
 
+        // >> INPUT HANDLER INITIALIZATION
+        this.inputHandler = new InputHandler(camera, simulation, this);
+        this.inputHandler.attach(canvas);
+
         // >> RESIZE LISTENER
         canvas.widthProperty().addListener((observable, oldValue, newValue) -> {
             camera.onResize(newValue.doubleValue(), gc.getCanvas().getHeight(), AU);
@@ -75,7 +81,7 @@ public class NBodySimulator extends Application {
             camera.onResize(gc.getCanvas().getWidth(), newValue.doubleValue(), AU);
         });
 
-        // >> NOW DISPLAY
+        // >> DISPLAY
         primaryStage.show();
 
         // >> UI LOGIC
@@ -86,20 +92,6 @@ public class NBodySimulator extends Application {
                     PhysicsEngine.G = PhysicsEngine.G_DEFAULT * newVal.doubleValue();
                 }
         );
-
-        // >> MOUSE CONTROLS
-        canvas.setOnMousePressed(e -> {
-            camera.onMousePressed(e.getX(), e.getY());
-            draw();
-        });
-        canvas.setOnMouseDragged(e -> {
-            camera.onMouseDragged(e.getX(), e.getY());
-            draw();
-        });
-        canvas.setOnScroll(e -> {
-            camera.onScroll(e.getX(), e.getY(), e.getDeltaY());
-            draw();
-        });
 
         // >> CORE LOOP LOGIC
         timer = new AnimationTimer() {
@@ -115,7 +107,7 @@ public class NBodySimulator extends Application {
     }
 
     // >> DRAW HELPER METHOD
-    private void draw() {
+    public void draw() {
 
         // >> CLEAR CANVAS WITH BLACK BG
         gc.setFill(Color.BLACK);
