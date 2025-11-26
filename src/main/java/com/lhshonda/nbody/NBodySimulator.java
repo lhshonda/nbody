@@ -1,97 +1,71 @@
 package com.lhshonda.nbody;
 
-import javafx.application.Application; // class managing the lifecycle of the app
-import javafx.stage.Stage; // top level window
-import javafx.scene.Scene; // content inside the window
+import javafx.application.Application;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.layout.Pane; // the root container of the canvas
-import javafx.scene.canvas.GraphicsContext; // the toolbox used to interact with the canvas
-import javafx.scene.paint.Color; // class holding color information; used to tell gc what color to use
-import javafx.animation.AnimationTimer; // object with 'handle (long now)' method; typically called 60 times a second
+import javafx.scene.layout.BorderPane;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.animation.AnimationTimer;
 
 public class NBodySimulator extends Application {
 
-    // defining some constants for window size
+    // >> WINDOW SIZING
     private static final int WINDOW_WIDTH = 1024;
     private static final int WINDOW_HEIGHT = 768;
 
-    // simulation constants
+    // >> CALCULATION CONSTANTS
     private static final double SUN_MASS = 330_000;
     private static final double EARTH_MASS = 1;
 
-    // class fields
-    private PhysicsEngine simulation;
+    // >> CLASS FIELDS
+    private PhysicsEngine simulation;   // :: PHYSICS ENGINE
+    private GraphicsContext gc;         // :: THE "PEN"
+    private AnimationTimer timer;       // :: IMPORTED TIMER
+    private boolean isPaused = false;   // :: PLAY STATE
+    private ControlPanel uiPanel;       // :: UI PANEL CONTROLS
 
-    // creating the 'pen'
-    private GraphicsContext gc;
-
-    // tells the compiler this method overrides a method declared in a superclass and acts as a form of protection against typos
+    // >> MAIN ENTRY POINT
     @Override
-    public void start(Stage stage) {
-        // this is the "root node", aka the scene graph foundation
-        Pane root = new Pane(); // pane is the simplest layout container
-        Canvas canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT); // defining the new canvas with the field values
-        this.gc = canvas.getGraphicsContext2D(); // getting the 'pen'
-        root.getChildren().add(canvas); // adding the canvas to the root container
+    public void start(Stage primaryStage) {
 
-        // create the engine
+        // >> PROGRAM WINDOW
+        BorderPane root = new BorderPane();
+        Canvas canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
+        this.gc = canvas.getGraphicsContext2D();
+        root.setCenter(canvas);
+
+        // >> MODELING
         simulation = new PhysicsEngine();
+        setupInitialBodies();
 
-        // create the sun
-        simulation.addBody (new StellarObject(
-                WINDOW_WIDTH / 2.0,
-                WINDOW_HEIGHT / 2.0,
-                0,
-                0,
-                SUN_MASS,
-                20
-        ));
+        // >> UI PANEL CREATION
+        uiPanel = new ControlPanel();
+        root.setRight(uiPanel.getRootPanel());
 
-        double r_pixels = 256.0;
-        double v_orbit = 113.5;
+        // >> UI LOGIC
+        uiPanel.getPauseButton().setOnAction(e -> togglePause());
+        uiPanel.getResetButton().setOnAction(e -> restartSimulation());
 
-        // create the earth
-        simulation.addBody(new StellarObject(
-                (WINDOW_WIDTH / 2.0) - r_pixels,
-                WINDOW_HEIGHT / 2.0,
-                0,
-                -v_orbit,
-                1,
-                5
-        ));
-
-        double r2_pixels = 150.0;
-        double v2_orbit = Math.sqrt((10 * SUN_MASS) / r2_pixels);
-
-        simulation.addBody(new StellarObject(
-                (WINDOW_WIDTH / 2.0) + r2_pixels,
-                WINDOW_HEIGHT / 2.0,
-                0,
-                v2_orbit,
-                5,
-                7
-        ));
-
-        AnimationTimer timer = new AnimationTimer() {
-            // creating a variable inside the timer in nanoseconds
+        // >> CORE LOOP LOGIC
+        timer = new AnimationTimer() {
             private long lastUpdate = 0;
 
-
-            @Override // replacing a method from the parent class
+            @Override
             public void handle(long now) {
-
-                // set lastUpdate on the first frame to zero in order to attain deltaTime
+                // :: The first frame defined as "now".
                 if (lastUpdate == 0) {
                     lastUpdate = now;
                     return;
                 }
 
-                /* calculate time elapsed since last frame; dividing by one billion because there are
-                one billion nanoseconds in one second; the physics formulas rely on seconds */
+                // :: Calculating time elapse since the last frame.
+                // :: Dividing by one billion because there are one billion nanoseconds in one second.
                 double deltaTime = (now - lastUpdate) / 1_000_000_000.0;
                 lastUpdate = now;
 
-                // capping deltaTime to 1/60th of a second
+                // >> DELTA TIME MAX THRESHOLD
                 if (deltaTime > 0.0166) {
                     deltaTime = 0.0166;
                 }
@@ -100,28 +74,24 @@ public class NBodySimulator extends Application {
                 draw();
             }
         };
+
+        // >> BEGIN LOOP
         timer.start();
 
-        // the content inside the window is the scene
+        // >> JAVAFX DISPLAYING
         Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-
-        // giving the application window a name
-        stage.setTitle("N-Body Simulation 2D");
-
-        // attaches the scene to the window
-        stage.setScene(scene);
-
-        // tells java to create the OS-level window, display it on the screen, and to start rendering
-        stage.show();
+        primaryStage.setTitle("N-Body Simulation 2D");
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
 
-    // helper method for handler() from AnimationTimer
+    // >> DRAW HELPER METHOD
     private void draw() {
-        // clear entire screen with black bg
+        // >> CLEAR CANVAS WITH BLACK BG
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-        // draw color for the bodies
+        // >> DRAWING BODIES
         for (StellarObject body : simulation.getBodies()) {
             if (body.getMass() > 300_000) {
                 gc.setFill(Color.YELLOW);
@@ -134,6 +104,67 @@ public class NBodySimulator extends Application {
 
             gc.fillOval(body.getX() - r, body.getY() - r, diameter, diameter);
         }
+    }
+
+    // >> TIMER HELPER METHOD
+    private void togglePause() {
+        if (isPaused) {
+            timer.start();
+            isPaused = false;
+            uiPanel.getPauseButton().setText("Pause");
+        } else {
+            timer.stop();
+            isPaused = true;
+            uiPanel.getPauseButton().setText("Play");
+        }
+    }
+
+    private void setupInitialBodies() {
+        simulation.getBodies().clear();
+
+        // >> SUN
+        simulation.addBody (new StellarObject(
+                WINDOW_WIDTH / 2.0,
+                WINDOW_HEIGHT / 2.0,
+                0,
+                0,
+                SUN_MASS,
+                20
+        ));
+
+        // >> EARTH
+        double r_pixels = 256.0;
+        double v_orbit = 113.5;
+
+        simulation.addBody(new StellarObject(
+                (WINDOW_WIDTH / 2.0) - r_pixels,
+                WINDOW_HEIGHT / 2.0,
+                0,
+                -v_orbit,
+                1,
+                5
+        ));
+
+        // >> RANDOM BODY
+        double r2_pixels = 150.0;
+        double v2_orbit = Math.sqrt((PhysicsEngine.G * SUN_MASS) / r2_pixels);
+
+        simulation.addBody(new StellarObject(
+                (WINDOW_WIDTH / 2.0) + r2_pixels,
+                WINDOW_HEIGHT / 2.0,
+                0,
+                v2_orbit,
+                5,
+                7
+        ));
+    }
+
+    private void restartSimulation() {
+        timer.stop();
+        simulation.getBodies().clear();
+        isPaused = false;
+        setupInitialBodies();
+        timer.start();
     }
 
     public static void main(String[] args) {

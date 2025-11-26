@@ -1,32 +1,22 @@
 package com.lhshonda.nbody;
 
-// POJO
 public class StellarObject {
 
-    /* The physics properties are private in order to prevent other parts of the code from
-    accidentally interacting with it. This is an OOP concept named encapsulation. */
-
-    // physical properties
+    // >> CLASS FIELDS
     private double x, y;
     private double vx, vy;
     private double mass;
     private double ax;
     private double ay;
-
-    // current forces acting on the body (tb calculated every frame)
     private double forceX, forceY;
-
-    // drawing properties
     private double radius;
 
-    /*
-    This constructor is called when the 'new' keyword is used. It initializes all
+    /* This constructor is called when the 'new' keyword is used. It initializes all
     the fields, getting them into a ready-to-use state. It 'constructs' the object.
 
     It must have no return type, and it must be the same name as the class.
     The keyword 'this' will ensure a reference to the specific object instance being created when the
-    constructor is called.
-     */
+    constructor is called. */
 
     public StellarObject(double x, double y, double vx, double vy, double mass, double radius) {
         this.x = x;
@@ -42,19 +32,19 @@ public class StellarObject {
         this.forceY = 0;
     }
 
-    // clearing the cumulative forces
+    // >> CLEAR FORCES METHOD
     public void resetForce() {
         this.forceX = 0;
         this.forceY = 0;
     }
 
-    // adding force vectors
+    // >> ADD FORCE METHOD
     public void addForce(double fx, double fy) {
         this.forceX += fx;
         this.forceY += fy;
     }
 
-    // defining getters to read data from stellar objects
+    // >> GETTER METHODS
     public double getX() {return x;}
     public double getY() {return y;}
     public double getVx() {return vx;}
@@ -66,7 +56,7 @@ public class StellarObject {
     public double getForceX() {return forceX;}
     public double getForceY() {return forceY;}
 
-    // defining setters to update data
+    // >> SETTER METHODS
     public void setX(double x) {this.x = x;}
     public void setY(double y) {this.y = y;}
     public void setVx(double vx) {this.vx = vx;}
