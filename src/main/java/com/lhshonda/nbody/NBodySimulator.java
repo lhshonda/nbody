@@ -10,7 +10,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.animation.AnimationTimer;
-import javafx.scene.input.MouseButton;
 
 public class NBodySimulator extends Application {
 
