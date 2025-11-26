@@ -13,23 +13,35 @@ public class ControlPanel {
     private final Slider gravitySlider;
 
     public ControlPanel() {
-        // >> CREATING BUTTONS
+        // >> PAUSE BUTTON
         this.pauseButton = new Button("Pause");
         this.pauseButton.setPrefWidth(100);
+        this.pauseButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
 
+        // >> RESET BUTTON
         this.resetButton = new Button("Reset");
         this.resetButton.setPrefWidth(100);
+        this.resetButton.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
 
+        // >> GRAVITY SLIDER
         Label gravityLabel = new Label("Gravity:");
+        gravityLabel.setStyle("-fx-text-fill: white");
         this.gravitySlider = new Slider();
-        this.gravitySlider.setMin(0.1);
+        this.gravitySlider.setMaxWidth(200.0);
+        this.gravitySlider.setMin(0.0);
         this.gravitySlider.setMax(10.0);
         this.gravitySlider.setValue(1.0);
+        this.gravitySlider.setShowTickLabels(true);
+        this.gravitySlider.setShowTickMarks(true);
+        this.gravitySlider.setMajorTickUnit(1.0);
+        this.gravitySlider.setMinorTickCount(1);
+        this.gravitySlider.setSnapToTicks(true);
+
 
         // >> DEFINING LAYOUT
-        this.rootPanel = new VBox(10);
-        this.rootPanel.setPadding(new Insets(10,10,10,10));
-        this.rootPanel.getChildren().addAll(this.pauseButton, this.resetButton, gravityLabel, this.gravitySlider);
+        this.rootPanel = new VBox(20);
+        this.rootPanel.setPadding(new Insets(50));
+        this.rootPanel.getChildren().addAll(gravityLabel, this.gravitySlider, this.resetButton, this.pauseButton);
     }
 
     // >> GETTER METHODS

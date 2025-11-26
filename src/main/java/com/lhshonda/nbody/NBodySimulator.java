@@ -4,16 +4,14 @@ import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.geometry.Pos;
+import javafx.scene.layout.StackPane;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.animation.AnimationTimer;
 
 public class NBodySimulator extends Application {
-
-    // >> WINDOW SIZING
-    private static final int WINDOW_WIDTH = 1024;
-    private static final int WINDOW_HEIGHT = 768;
 
     // >> CAMERA FIELDS
     private double scale;
@@ -39,20 +37,38 @@ public class NBodySimulator extends Application {
     // >> MAIN ENTRY POINT
     @Override
     public void start(Stage primaryStage) {
+        Canvas canvas = new Canvas();
+
+        // >> UI PANEL CREATION
+        uiPanel = new ControlPanel();
+        VBox controlPanelBox = uiPanel.getRootPanel();
 
         // >> PROGRAM WINDOW
-        BorderPane root = new BorderPane();
-        Canvas canvas = new Canvas(WINDOW_WIDTH, WINDOW_HEIGHT);
-        this.gc = canvas.getGraphicsContext2D();
-        root.setCenter(canvas);
+        StackPane root = new StackPane();
+        root.getChildren().addAll(canvas, controlPanelBox);
+        StackPane.setAlignment(controlPanelBox, Pos.TOP_LEFT);
+        controlPanelBox.setPickOnBounds(false);
+
+        // >> CANVAS RESIZING
+        canvas.widthProperty().bind(primaryStage.widthProperty());
+        canvas.heightProperty().bind(primaryStage.heightProperty());
+
+        // >> GET GRAPHICAL CONTEXT
+        gc = canvas.getGraphicsContext2D();
+
+        // >> RESIZE LISTENER
+        canvas.widthProperty().addListener((observable, oldValue, newValue) -> updateCamera());
+        canvas.heightProperty().addListener((observable, oldValue, newValue) -> updateCamera());
 
         // >> MODELING
         simulation = new PhysicsEngine();
         setupInitialBodies();
 
-        // >> UI PANEL CREATION
-        uiPanel = new ControlPanel();
-        root.setRight(uiPanel.getRootPanel());
+        // >> CREATE AND STAGE SCENE
+        Scene scene = new Scene(root, 1024, 768);
+        primaryStage.setTitle("N-Body Simulation 2D");
+        primaryStage.setScene(scene);
+        primaryStage.show();
 
         // >> UI LOGIC
         uiPanel.getPauseButton().setOnAction(e -> togglePause());
@@ -62,11 +78,6 @@ public class NBodySimulator extends Application {
                     PhysicsEngine.G = PhysicsEngine.G_DEFAULT * newVal.doubleValue();
                 }
         );
-
-        // >> CAMERA INITIALIZATION
-        this.scale = WINDOW_WIDTH / (AU * 4.5);
-        this.screenOffsetX = WINDOW_WIDTH / 2.0;
-        this.screenOffsetY = WINDOW_HEIGHT / 2.0;
 
         // >> CORE LOOP LOGIC
         timer = new AnimationTimer() {
@@ -79,19 +90,14 @@ public class NBodySimulator extends Application {
 
         // >> BEGIN LOOP
         timer.start();
-
-        // >> JAVAFX DISPLAYING
-        Scene scene = new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT);
-        primaryStage.setTitle("N-Body Simulation 2D");
-        primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
     // >> DRAW HELPER METHOD
     private void draw() {
+
         // >> CLEAR CANVAS WITH BLACK BG
         gc.setFill(Color.BLACK);
-        gc.fillRect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+        gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
 
         // >> DRAWING BODIES
         for (StellarObject body : simulation.getBodies()) {
@@ -178,6 +184,19 @@ public class NBodySimulator extends Application {
         uiPanel.getGravitySlider().setValue(1.0);
 
         timer.start();
+    }
+
+    private void updateCamera() {
+        double width = gc.getCanvas().getWidth();
+        double height = gc.getCanvas().getHeight();
+
+        this.scale = width / (AU * 8.5);
+        this.screenOffsetX = width / 2.0;
+        this.screenOffsetY = height / 2.0;
+
+        if (gc != null) {
+            draw();
+        }
     }
 
     public static void main(String[] args) {

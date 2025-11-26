@@ -8,8 +8,6 @@ public class PhysicsEngine {
     private final List<StellarObject> bodies;
 
     // >> GRAVITATIONAL CONSTANT
-    // :: In the real world 'G' is very small (6.674e-11).
-    // :: In order to make it noticeable it's scaled by a lot.
     public static final double G_DEFAULT = 6.67430e-11;
     public static double G = G_DEFAULT;
 
@@ -18,13 +16,13 @@ public class PhysicsEngine {
         this.bodies = new ArrayList<>();
     }
 
-    // >> METHOD USED TO ADD CELESTIAL BODIES
+    // >> ADD BODY METHOD
     public void addBody(StellarObject body) { this.bodies.add(body); }
 
     // >> ARRAY LIST GETTER
     public List<StellarObject> getBodies() { return this.bodies; }
 
-    // >> ENGINE CALCULATIONS
+    // >> PHYSICS ENGINE
     public void update(double dt) {
 
         // :: Updating body positions based on the current velocity & previous frame's acceleration.

@@ -23,10 +23,11 @@ public class StellarObject {
         this.y = y;
         this.vx = vx;
         this.vy = vy;
-        this.ax = ax;
-        this.ay = ay;
         this.mass = mass;
         this.radius = radius;
+
+        this.ax = 0.0;
+        this.ay = 0.0;
 
         this.forceX = 0;
         this.forceY = 0;
