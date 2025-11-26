@@ -57,6 +57,11 @@ public class NBodySimulator extends Application {
         // >> UI LOGIC
         uiPanel.getPauseButton().setOnAction(e -> togglePause());
         uiPanel.getResetButton().setOnAction(e -> restartSimulation());
+        uiPanel.getGravitySlider().valueProperty().addListener(
+                (observable, oldVal, newVal) -> {
+                    PhysicsEngine.G = PhysicsEngine.G_DEFAULT * newVal.doubleValue();
+                }
+        );
 
         // >> CAMERA INITIALIZATION
         this.scale = WINDOW_WIDTH / (AU * 4.5);
@@ -153,21 +158,25 @@ public class NBodySimulator extends Application {
                 EARTH_RADIUS
         ));
 
-//        simulation.addBody (new StellarObject(
-//                AU * 0.8,
-//                0,
-//                0,
-//                EARTH_VELOCITY,
-//                EARTH_MASS,
-//                EARTH_RADIUS
-//        ));
+        simulation.addBody (new StellarObject(
+                AU * 0.8,
+                0,
+                0,
+                EARTH_VELOCITY,
+                EARTH_MASS,
+                EARTH_RADIUS
+        ));
     }
 
     private void restartSimulation() {
         timer.stop();
-        simulation.getBodies().clear();
-        isPaused = false;
         setupInitialBodies();
+        isPaused = false;
+        uiPanel.getPauseButton().setText("Pause");
+
+        PhysicsEngine.G = PhysicsEngine.G_DEFAULT;
+        uiPanel.getGravitySlider().setValue(1.0);
+
         timer.start();
     }
 

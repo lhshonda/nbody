@@ -10,7 +10,8 @@ public class PhysicsEngine {
     // >> GRAVITATIONAL CONSTANT
     // :: In the real world 'G' is very small (6.674e-11).
     // :: In order to make it noticeable it's scaled by a lot.
-    public static final double G = 6.67430e-11;
+    public static final double G_DEFAULT = 6.67430e-11;
+    public static double G = G_DEFAULT;
 
     // >> CONSTRUCTOR
     public PhysicsEngine() {
