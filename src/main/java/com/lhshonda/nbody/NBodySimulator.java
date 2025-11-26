@@ -13,11 +13,6 @@ import javafx.animation.AnimationTimer;
 
 public class NBodySimulator extends Application {
 
-    // >> CAMERA FIELDS
-    private double scale;
-    private double screenOffsetX;
-    private double screenOffsetY;
-
     // >> CONSTANTS
     private static final double AU = 1.496e11;
     private static final double SUN_MASS = 1.989e30;
@@ -33,6 +28,7 @@ public class NBodySimulator extends Application {
     private AnimationTimer timer;       // :: IMPORTED TIMER
     private boolean isPaused = false;   // :: PLAY STATE
     private ControlPanel uiPanel;       // :: UI PANEL CONTROLS
+    private Camera camera;
 
     // >> MAIN ENTRY POINT
     @Override
@@ -56,10 +52,6 @@ public class NBodySimulator extends Application {
         // >> GET GRAPHICAL CONTEXT
         gc = canvas.getGraphicsContext2D();
 
-        // >> RESIZE LISTENER
-        canvas.widthProperty().addListener((observable, oldValue, newValue) -> updateCamera());
-        canvas.heightProperty().addListener((observable, oldValue, newValue) -> updateCamera());
-
         // >> MODELING
         simulation = new PhysicsEngine();
         setupInitialBodies();
@@ -68,6 +60,22 @@ public class NBodySimulator extends Application {
         Scene scene = new Scene(root, 1024, 768);
         primaryStage.setTitle("N-Body Simulation 2D");
         primaryStage.setScene(scene);
+//        primaryStage.show();
+
+        // >> CAMERA INITIALIZATION
+        // :: Created after the scene in order to know the starting size.
+        this.camera = new Camera(scene.getWidth(), scene.getHeight(), AU);
+
+        // >> RESIZE LISTENER
+        canvas.widthProperty().addListener((observable, oldValue, newValue) -> {
+            camera.onResize(newValue.doubleValue(), gc.getCanvas().getHeight(), AU);
+            draw();
+        });
+        canvas.heightProperty().addListener((observable, oldValue, newValue) -> {
+            camera.onResize(gc.getCanvas().getWidth(), newValue.doubleValue(), AU);
+        });
+
+        // >> NOW DISPLAY
         primaryStage.show();
 
         // >> UI LOGIC
@@ -78,6 +86,20 @@ public class NBodySimulator extends Application {
                     PhysicsEngine.G = PhysicsEngine.G_DEFAULT * newVal.doubleValue();
                 }
         );
+
+        // >> MOUSE CONTROLS
+        canvas.setOnMousePressed(e -> {
+            camera.onMousePressed(e.getX(), e.getY());
+            draw();
+        });
+        canvas.setOnMouseDragged(e -> {
+            camera.onMouseDragged(e.getX(), e.getY());
+            draw();
+        });
+        canvas.setOnScroll(e -> {
+            camera.onScroll(e.getX(), e.getY(), e.getDeltaY());
+            draw();
+        });
 
         // >> CORE LOOP LOGIC
         timer = new AnimationTimer() {
@@ -106,8 +128,8 @@ public class NBodySimulator extends Application {
             double worldY = body.getY();
 
             // >> CONVERT TO PIXELS
-            double screenX = (worldX * scale) + screenOffsetX;
-            double screenY = (-worldY * scale) + screenOffsetY;
+            double screenX = (worldX * camera.getScale()) + camera.getOffsetX();
+            double screenY = (-worldY * camera.getScale()) + camera.getOffsetY();
 
             double visualRadius;
 
@@ -184,19 +206,6 @@ public class NBodySimulator extends Application {
         uiPanel.getGravitySlider().setValue(1.0);
 
         timer.start();
-    }
-
-    private void updateCamera() {
-        double width = gc.getCanvas().getWidth();
-        double height = gc.getCanvas().getHeight();
-
-        this.scale = width / (AU * 8.5);
-        this.screenOffsetX = width / 2.0;
-        this.screenOffsetY = height / 2.0;
-
-        if (gc != null) {
-            draw();
-        }
     }
 
     public static void main(String[] args) {
