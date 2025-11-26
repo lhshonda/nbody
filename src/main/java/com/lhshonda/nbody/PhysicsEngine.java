@@ -10,7 +10,7 @@ public class PhysicsEngine {
     // >> GRAVITATIONAL CONSTANT
     // :: In the real world 'G' is very small (6.674e-11).
     // :: In order to make it noticeable it's scaled by a lot.
-    public static final double G = 10;
+    public static final double G = 6.67430e-11;
 
     // >> CONSTRUCTOR
     public PhysicsEngine() {
@@ -50,8 +50,9 @@ public class PhysicsEngine {
                 double r = Math.sqrt(rSquared);
 
                 // >> DISTANCE CLAMP
-                if (r < 5.0) {
-                    r = 5.0;
+                double minDistance = bodyA.getRadius() - bodyB.getRadius();
+                if (r < minDistance) {
+                    r = minDistance;
                     rSquared = r * r;
                 }
 

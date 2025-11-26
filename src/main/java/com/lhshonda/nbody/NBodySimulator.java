@@ -15,9 +15,19 @@ public class NBodySimulator extends Application {
     private static final int WINDOW_WIDTH = 1024;
     private static final int WINDOW_HEIGHT = 768;
 
-    // >> CALCULATION CONSTANTS
-    private static final double SUN_MASS = 330_000;
-    private static final double EARTH_MASS = 1;
+    // >> CAMERA FIELDS
+    private double scale;
+    private double screenOffsetX;
+    private double screenOffsetY;
+
+    // >> CONSTANTS
+    private static final double AU = 1.496e11;
+    private static final double SUN_MASS = 1.989e30;
+    private static final double EARTH_MASS = 5.972e24;
+    private static final double SUN_RADIUS = 6.963e8;
+    private static final double EARTH_RADIUS = 6.371e6;
+    private static final double EARTH_VELOCITY = 29780;
+    private static final double TIME_STEP = 6 * 3600.0;
 
     // >> CLASS FIELDS
     private PhysicsEngine simulation;   // :: PHYSICS ENGINE
@@ -48,29 +58,16 @@ public class NBodySimulator extends Application {
         uiPanel.getPauseButton().setOnAction(e -> togglePause());
         uiPanel.getResetButton().setOnAction(e -> restartSimulation());
 
+        // >> CAMERA INITIALIZATION
+        this.scale = WINDOW_WIDTH / (AU * 4.5);
+        this.screenOffsetX = WINDOW_WIDTH / 2.0;
+        this.screenOffsetY = WINDOW_HEIGHT / 2.0;
+
         // >> CORE LOOP LOGIC
         timer = new AnimationTimer() {
-            private long lastUpdate = 0;
-
             @Override
             public void handle(long now) {
-                // :: The first frame defined as "now".
-                if (lastUpdate == 0) {
-                    lastUpdate = now;
-                    return;
-                }
-
-                // :: Calculating time elapse since the last frame.
-                // :: Dividing by one billion because there are one billion nanoseconds in one second.
-                double deltaTime = (now - lastUpdate) / 1_000_000_000.0;
-                lastUpdate = now;
-
-                // >> DELTA TIME MAX THRESHOLD
-                if (deltaTime > 0.0166) {
-                    deltaTime = 0.0166;
-                }
-
-                simulation.update(deltaTime);
+                simulation.update(TIME_STEP);
                 draw();
             }
         };
@@ -93,16 +90,30 @@ public class NBodySimulator extends Application {
 
         // >> DRAWING BODIES
         for (StellarObject body : simulation.getBodies()) {
-            if (body.getMass() > 300_000) {
+            // >> GET REAL WORLD POSITION
+            double worldX = body.getX();
+            double worldY = body.getY();
+
+            // >> CONVERT TO PIXELS
+            double screenX = (worldX * scale) + screenOffsetX;
+            double screenY = (-worldY * scale) + screenOffsetY;
+
+            double visualRadius;
+
+            if (body.getMass() > SUN_MASS / 2) {
                 gc.setFill(Color.YELLOW);
+                visualRadius = 10;
             } else {
                 gc.setFill(Color.AQUAMARINE);
+                visualRadius = 3;
             }
 
-            double r = body.getRadius();
-            double diameter = r * 2;
-
-            gc.fillOval(body.getX() - r, body.getY() - r, diameter, diameter);
+            gc.fillOval(
+                    screenX - visualRadius,
+                    screenY - visualRadius,
+                    visualRadius * 2,
+                    visualRadius * 2
+            );
         }
     }
 
@@ -123,40 +134,33 @@ public class NBodySimulator extends Application {
         simulation.getBodies().clear();
 
         // >> SUN
-        simulation.addBody (new StellarObject(
-                WINDOW_WIDTH / 2.0,
-                WINDOW_HEIGHT / 2.0,
+        simulation.addBody(new StellarObject(
+                0,
+                0,
                 0,
                 0,
                 SUN_MASS,
-                20
+                SUN_RADIUS
         ));
 
         // >> EARTH
-        double r_pixels = 256.0;
-        double v_orbit = 113.5;
-
-        simulation.addBody(new StellarObject(
-                (WINDOW_WIDTH / 2.0) - r_pixels,
-                WINDOW_HEIGHT / 2.0,
+        simulation.addBody (new StellarObject(
+                AU,
                 0,
-                -v_orbit,
-                1,
-                5
+                0,
+                EARTH_VELOCITY,
+                EARTH_MASS,
+                EARTH_RADIUS
         ));
 
-        // >> RANDOM BODY
-        double r2_pixels = 150.0;
-        double v2_orbit = Math.sqrt((PhysicsEngine.G * SUN_MASS) / r2_pixels);
-
-        simulation.addBody(new StellarObject(
-                (WINDOW_WIDTH / 2.0) + r2_pixels,
-                WINDOW_HEIGHT / 2.0,
-                0,
-                v2_orbit,
-                5,
-                7
-        ));
+//        simulation.addBody (new StellarObject(
+//                AU * 0.8,
+//                0,
+//                0,
+//                EARTH_VELOCITY,
+//                EARTH_MASS,
+//                EARTH_RADIUS
+//        ));
     }
 
     private void restartSimulation() {
