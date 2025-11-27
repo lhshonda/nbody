@@ -5,6 +5,8 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import java.util.List;
+import java.util.Queue;
+import javafx.geometry.Point2D;
 
 public class SimulationView2D implements ISimulationView {
 
@@ -14,8 +16,13 @@ public class SimulationView2D implements ISimulationView {
     private final Camera camera;
     private final InputHandler inputHandler;
 
+    // >> WORLD CONSTANTS
     private static final double AU = 1.49e11;
     private static final double SUN_MASS = 1.989e30;
+
+    // >> TRAIL CONSTANTS
+    private static final int TRAIL_DOT_SPACING = 10;
+    private static final double TRAIL_DOT_RADIUS = 2.0;
 
     public SimulationView2D(PhysicsEngine physicsEngine, NBodySimulator simulation) {
         this.canvas = new Canvas();
@@ -46,6 +53,38 @@ public class SimulationView2D implements ISimulationView {
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
 
+        // >> TRAIL APPEARANCE
+        gc.setStroke(Color.RED.deriveColor(0,1,1,0.5));
+        gc.setLineWidth(1.0);
+
+        for (StellarObject body : bodies) {
+
+            // >> ASSIGN QUEUE
+            Queue<Point2D> history = body.getPositionHistory();
+
+            // >> LAG BEFORE DRAW
+            if (history.size() < 2) { continue; }
+
+            gc.beginPath();
+            boolean firstPoint = true;
+
+            // >> PULL VECTOR PAIRS FROM QUEUE
+            for (Point2D worldPos : history) {
+                double screenX = worldPos.getX() * camera.getScale() + camera.getOffsetX();
+                double screenY = -worldPos.getY()  * camera.getScale() + camera.getOffsetY();
+
+                // >> MOVE PENCIL
+                if (firstPoint) {
+                    gc.moveTo(screenX, screenY);
+                    firstPoint = false;
+                } else {
+                    gc.lineTo(screenX, screenY);
+                }
+            }
+
+            gc.stroke();
+        }
+
         // >> DRAWING BODIES
         for (StellarObject body : bodies) {
 
@@ -62,7 +101,7 @@ public class SimulationView2D implements ISimulationView {
                 gc.setFill(Color.YELLOW);
                 visualRadius = 10;
             } else {
-                gc.setFill(Color.AQUAMARINE);
+                gc.setFill(Color.RED);
                 visualRadius = 3;
             }
 

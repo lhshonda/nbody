@@ -1,5 +1,9 @@
 package com.lhshonda.nbody;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import javafx.geometry.Point2D;
+
 public class StellarObject {
 
     // >> CLASS FIELDS
@@ -11,12 +15,9 @@ public class StellarObject {
     private double forceX, forceY;
     private double radius;
 
-    /* This constructor is called when the 'new' keyword is used. It initializes all
-    the fields, getting them into a ready-to-use state. It 'constructs' the object.
-
-    It must have no return type, and it must be the same name as the class.
-    The keyword 'this' will ensure a reference to the specific object instance being created when the
-    constructor is called. */
+    // >> TRAIL FIELDS
+    public static final int MAX_TRAIL_POINTS = 200;
+    private final Queue<Point2D> positionHistory;
 
     public StellarObject(double x, double y, double vx, double vy, double mass, double radius) {
         this.x = x;
@@ -25,12 +26,30 @@ public class StellarObject {
         this.vy = vy;
         this.mass = mass;
         this.radius = radius;
-
         this.ax = 0.0;
         this.ay = 0.0;
-
         this.forceX = 0;
         this.forceY = 0;
+
+        // >> IMPLEMENT QUEUE VIA LINKED LIST
+        this.positionHistory = new LinkedList<>();
+
+        // >> INITIAL QUEUE VALUE ON OBJECT CONSTRUCTION
+        this.positionHistory.add(new Point2D(this.x, this.y));
+    }
+
+    // >> METHOD TO ADD ONTO QUEUE
+    public void logPosition() {
+        this.positionHistory.add(new Point2D(this.x, this.y));
+
+        // >> REMOVE TRACER POINT THRESHOLD
+        if (this.positionHistory.size() > MAX_TRAIL_POINTS) {
+            this.positionHistory.poll();
+        }
+    }
+
+    public Queue<Point2D> getPositionHistory() {
+        return this.positionHistory;
     }
 
     // >> CLEAR FORCES METHOD

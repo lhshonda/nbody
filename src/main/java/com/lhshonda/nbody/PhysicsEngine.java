@@ -29,6 +29,9 @@ public class PhysicsEngine {
         for (StellarObject body : this.bodies) {
             body.setX(body.getX() + body.getVx() * dt + (0.5 * body.getAx() * dt * dt));
             body.setY(body.getY() + body.getVy() * dt + (0.5 * body.getAy() * dt * dt));
+
+            // >> ADD WORLD POSITION INTO QUEUE
+            body.logPosition();
         }
 
         // >> BODY FORCE RESET
