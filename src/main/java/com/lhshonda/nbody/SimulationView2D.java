@@ -16,15 +16,16 @@ public class SimulationView2D implements ISimulationView {
     private final Camera camera;
     private final InputHandler inputHandler;
 
+    // >> NEW FIELDS FOR HS
+    private final PhysicsEngine physicsEngine;
+    final double VISUAL_RADIUS_FACTOR = 20.0;
+
     // >> WORLD CONSTANTS
     private static final double AU = 1.49e11;
     private static final double SUN_MASS = 1.989e30;
 
-    // >> TRAIL CONSTANTS
-    private static final int TRAIL_DOT_SPACING = 10;
-    private static final double TRAIL_DOT_RADIUS = 2.0;
-
     public SimulationView2D(PhysicsEngine physicsEngine, NBodySimulator simulation) {
+        this.physicsEngine = physicsEngine;
         this.canvas = new Canvas();
         this.gc = canvas.getGraphicsContext2D();
         this.camera = new Camera(1024, 768, AU);
@@ -53,27 +54,53 @@ public class SimulationView2D implements ISimulationView {
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, gc.getCanvas().getWidth(), gc.getCanvas().getHeight());
 
-        // >> TRAIL APPEARANCE
-        gc.setStroke(Color.RED.deriveColor(0,1,1,0.5));
+        // >> HS APPEARANCE
         gc.setLineWidth(1.0);
+        gc.setLineDashes(5, 5);
+        gc.setStroke(Color.web("#3498db", 0.45));
+
+        for (StellarObject body : bodies) {
+            
+            // >> CALC HILL RADIUS
+            double hillRadiusWorld = physicsEngine.calculateHillRadius(body);
+            
+            if (hillRadiusWorld > 0.0) {
+                
+                // >> WLRD RADIUS TO PXLS
+                double hillRadiusScreen = hillRadiusWorld * camera.getScale() * VISUAL_RADIUS_FACTOR;
+                
+                // >> WLRD POS TO SCREEN
+                double screenX = (body.getX() * camera.getScale()) + camera.getOffsetX();
+                double screenY = (-body.getY() * camera.getScale()) + camera.getOffsetY();
+
+                // >> DRAW HS
+                gc.strokeOval(
+                    screenX - hillRadiusScreen, 
+                    screenY - hillRadiusScreen, 
+                    2 * hillRadiusScreen, 
+                    2 * hillRadiusScreen
+                );
+            }
+        }
+        
+        gc.setLineDashes(0); 
+        
+        // >> TRAIL APPEARANCE
+        gc.setStroke(Color.RED.deriveColor(0,1,1,0.2));
+        gc.setLineWidth(2.0);
 
         for (StellarObject body : bodies) {
 
-            // >> ASSIGN QUEUE
             Queue<Point2D> history = body.getPositionHistory();
-
-            // >> LAG BEFORE DRAW
             if (history.size() < 2) { continue; }
 
             gc.beginPath();
             boolean firstPoint = true;
 
-            // >> PULL VECTOR PAIRS FROM QUEUE
             for (Point2D worldPos : history) {
                 double screenX = worldPos.getX() * camera.getScale() + camera.getOffsetX();
-                double screenY = -worldPos.getY()  * camera.getScale() + camera.getOffsetY();
+                double screenY = -worldPos.getY() * camera.getScale() + camera.getOffsetY();
 
-                // >> MOVE PENCIL
                 if (firstPoint) {
                     gc.moveTo(screenX, screenY);
                     firstPoint = false;
@@ -81,13 +108,11 @@ public class SimulationView2D implements ISimulationView {
                     gc.lineTo(screenX, screenY);
                 }
             }
-
             gc.stroke();
         }
 
-        // >> DRAWING BODIES
         for (StellarObject body : bodies) {
-
+            
             // >> GET REAL WORLD POSITION
             double worldX = body.getX();
             double worldY = body.getY();
@@ -106,12 +131,11 @@ public class SimulationView2D implements ISimulationView {
             }
 
             gc.fillOval(
-                    screenX - visualRadius,
-                    screenY - visualRadius,
-                    visualRadius * 2,
-                    visualRadius * 2
+                screenX - visualRadius,
+                screenY - visualRadius,
+                visualRadius * 2,
+                visualRadius * 2
             );
         }
     }
-
 }

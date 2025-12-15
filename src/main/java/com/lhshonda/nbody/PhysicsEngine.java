@@ -93,4 +93,37 @@ public class PhysicsEngine {
              body.setAy(ay_new);
          }
     }
+
+    public double calculateHillRadius(StellarObject satellite) {
+        if (this.bodies.size() < 2) {
+            return 0.0;
+        }
+
+        // >> FIND PRIMARY BODY
+        StellarObject primary = null;
+        double maxMass = -1.0;
+        
+        for (StellarObject body : this.bodies) {
+            if (body.getMass() > maxMass) {
+                maxMass = body.getMass();
+                primary = body;
+            }
+        }
+
+        // HILL RADIUS
+        if (primary == null || primary == satellite) {
+            return 0.0; 
+        }
+
+        // >> ORBITAL DISTANCE OF SATELLITE AND PRIMARY BODY
+        double dx = primary.getX() - satellite.getX();
+        double dy = primary.getY() - satellite.getY();
+        double a = Math.sqrt(dx * dx + dy * dy);
+
+        double massRatio = satellite.getMass() / primary.getMass();
+
+        // CUBE ROOT OF RATIO/3
+        double hillRadius = a * Math.pow(massRatio / 3.0, 1.0 / 3.0);
+        return hillRadius;
+    }
 }
