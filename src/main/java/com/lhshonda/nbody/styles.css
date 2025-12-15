@@ -1,0 +1,59 @@
+.root {
+    -fx-primary-dark: #2c3e50;    
+    -fx-secondary-dark: #34495e;  
+    -fx-accent-color: #968e1f;    
+    -fx-text-color-light: #ecf0f1;      
+    -fx-text-color-dark: #2c3e50; 
+    -fx-highlight-color: #2ecc71; 
+}
+
+.control-panel {
+    -fx-border-color: #34495e;
+    -fx-border-width: 0 0 0 1px; 
+    -fx-font-family: "Segoe UI", "Tahoma", "Arial";
+    -fx-padding: 0;
+}
+
+.control-button {
+    -fx-background-color: #315172;
+    -fx-text-fill: #fcfcfc;  
+    -fx-font-size: 9pt;
+    -fx-padding: 5 20;
+    -fx-background-radius: 5px;
+    -fx-border-color: #bdc3c7e3; 
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-cursor: hand;
+}
+
+.control-button:hover {
+    -fx-background-color: #3c82c7;
+    -fx-text-fill: rgb(231, 231, 231);
+}
+
+.control-slider {
+    -fx-padding: 10 0;
+    -fx-font-size: 12pt;
+}
+
+.control-slider .track {
+    -fx-background-color: #34495e;
+    -fx-pref-height: 4px; 
+    -fx-background-insets: 1 0 1 0;
+}
+
+.control-slider .thumb {
+    -fx-background-color: #315172;
+    -fx-border-color: #bdc3c7;
+    -fx-background-radius: 4px;
+    -fx-padding: 5px; 
+}
+
+.control-slider .thumb:hover {
+    -fx-background-color: #3c82c7;
+    -fx-cursor: hand;
+}
+
+.control-slider .axis .tick-label {
+    -fx-text-fill: #ecf0f1; 
+}
