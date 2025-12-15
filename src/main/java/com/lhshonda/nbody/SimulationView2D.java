@@ -114,6 +114,4 @@ public class SimulationView2D implements ISimulationView {
         }
     }
 
-
-
 }

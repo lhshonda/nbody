@@ -12,6 +12,11 @@ public class InputHandler {
     private final PhysicsEngine physicsEngine;
     private final NBodySimulator simulator;
 
+    // >> NEW FIELDS
+    private double startX;
+    private double startY;
+    private StellarObject bodyToFling;
+
     // >> CONSTANTS
     private static final double NEW_BODY_MASS = 5.972e24;
     private static final double NEW_BODY_RADIUS = 6.371e6;
@@ -27,6 +32,7 @@ public class InputHandler {
     public void attach(Canvas canvas) {
         canvas.setOnMousePressed(this::handleMousePressed);
         canvas.setOnMouseDragged(this::handleMouseDragged);
+        canvas.setOnMouseReleased(this::handleMouseReleased);
         canvas.setOnScroll(this::handleScroll);
     }
 
@@ -35,7 +41,11 @@ public class InputHandler {
         if (e.getButton() == MouseButton.PRIMARY) {
             camera.onMousePressed(e.getX(), e.getY());
         } else if (e.getButton() == MouseButton.SECONDARY) {
-            addBodyAtScreenPosition(e.getX(), e.getY());
+
+            // SAVE BODY COORDS
+            this.startX = e.getX();
+            this.startY = e.getY();
+            this.bodyToFling = createBodyAtScreenPosition(e.getX(), e.getY());
         }
     }
 
@@ -43,6 +53,33 @@ public class InputHandler {
         if (e.getButton() == MouseButton.PRIMARY) {
             camera.onMouseDragged(e.getX(), e.getY());
             simulator.draw();
+        } else if (e.getButton() == MouseButton.SECONDARY) {
+            simulator.draw();
+        }
+    }
+
+    private void handleMouseReleased(MouseEvent e) {
+        if (e.getButton() == MouseButton.SECONDARY && this.bodyToFling != null) {
+            
+            double endX = e.getX();
+            double endY = e.getY();
+            
+            double deltaScreenX = endX - this.startX;
+            double deltaScreenY = endY - this.startY;
+            
+            final double FLING_FACTOR = 2e2; 
+            
+            double velocityX = deltaScreenX * FLING_FACTOR;
+            double velocityY = deltaScreenY * -FLING_FACTOR; 
+            
+            this.bodyToFling.setVx(velocityX);
+            this.bodyToFling.setVy(velocityY);
+            
+            physicsEngine.addBody(this.bodyToFling);
+            
+            this.bodyToFling = null;
+            simulator.draw();
+            
         }
     }
 
@@ -51,30 +88,28 @@ public class InputHandler {
         simulator.draw();
     }
 
-    // >> REVERSING CAMERA POSITION FOR COORDS
-    private void addBodyAtScreenPosition(double screenX, double screenY) {
+    private StellarObject createBodyAtScreenPosition(double screenX, double screenY) {
 
-        // >> CURRENT STATE
-        double scale = camera.getScale();
-        double offsetX = camera.getOffsetX();
-        double offsetY = camera.getOffsetY();
+    // >> CURRENT STATE
+    double scale = camera.getScale();
+    double offsetX = camera.getOffsetX();
+    double offsetY = camera.getOffsetY();
 
-        // >> CONVERT PIXELS TO SI
-        double worldX = (screenX - offsetX) / scale;
-        double worldY = (screenY - offsetY) / -scale;
+    // >> CONVERT PIXELS TO SI
+    double worldX = (screenX - offsetX) / scale;
+    double worldY = (screenY - offsetY) / -scale;
 
-        // >> CREATING NEW BODY
-        StellarObject newBody = new StellarObject(
-                worldX,
-                worldY,
-                0,
-                0,
-                NEW_BODY_MASS,
-                NEW_BODY_RADIUS
-        );
-        physicsEngine.addBody(newBody);
-        simulator.draw();
+    // >> CREATING NEW BODY
+    StellarObject newBody = new StellarObject(
+            worldX,
+            worldY,
+            0,
+            0,
+            NEW_BODY_MASS,
+            NEW_BODY_RADIUS
+    );
 
-    }
+    return newBody;
+}
 
 }
